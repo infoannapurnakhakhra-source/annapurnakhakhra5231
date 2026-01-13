@@ -796,10 +796,10 @@ export default function ProductDetailsClient({ product }) {
                       }
 
                       content = (
-                        <ul className="list-none  space-y-1 text-gray-700">
-                          {values.map((val, i) => (
-                            <li key={i}>{val}</li>
-                          ))}
+                        <ul className="list-none space-y-1 text-gray-700">
+                          {Array.isArray(values)
+                            ? values.map((val, i) => <li key={i}>{val}</li>)
+                            : null}
                         </ul>
                       );
                     } else if (mf.key === "self_life") {
@@ -807,7 +807,7 @@ export default function ProductDetailsClient({ product }) {
                         <span className="text-gray-700">{mf.value}</span>
                       );
                     } else if (mf.key === "allergy_advice") {
-                      content = mf.value.split("\n").map((line, i) => (
+                      content = (mf.value || "").split("\n").map((line, i) => (
                         <p key={i} className="text-gray-700 mb-1">
                           {line}
                         </p>
