@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { MapPin, Plus, ArrowLeft, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import safeStorage from "@/lib/safeStorage";
+
 export default function MyAddressesPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ export default function MyAddressesPage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const customerId = localStorage.getItem("customerShopifyId");
+      const customerId = safeStorage.getItem("customerShopifyId");
       if (!customerId) {
         alert("Please login first!");
         window.location.href = "/auth/login";
@@ -46,7 +48,7 @@ export default function MyAddressesPage() {
           setUser(data.customer);
         } else {
           alert("Session expired. Please login again.");
-          localStorage.removeItem("customerShopifyId");
+          safeStorage.removeItem("customerShopifyId");
           window.location.href = "/auth/login";
         }
       } catch (err) {

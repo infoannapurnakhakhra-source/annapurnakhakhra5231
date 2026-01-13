@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { ShoppingBag, Package, Home } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import safeStorage from "@/lib/safeStorage";
+
 export default function OrderHistoryPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +22,7 @@ export default function OrderHistoryPage() {
     }
 
     const fetchOrders = async () => {
-      const customerId = localStorage.getItem("customerShopifyId");
+      const customerId = safeStorage.getItem("customerShopifyId");
 
       if (!customerId) {
         alert("Please login first!");
@@ -49,7 +51,7 @@ export default function OrderHistoryPage() {
           );
           setOrders(sortedOrders);
         } else {
-          localStorage.removeItem("customerShopifyId");
+          safeStorage.removeItem("customerShopifyId");
           alert("Session expired. Please login again.");
           router.push("/auth/login");
         }

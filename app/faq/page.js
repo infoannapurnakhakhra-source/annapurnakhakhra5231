@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import safeStorage from '@/lib/safeStorage';
 
 // Custom debounce hook
 const useDebounce = (value, delay) => {
@@ -150,17 +151,13 @@ const FAQSection = () => {
 
     // Initialize theme from localStorage (client-side only)
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const savedTheme = localStorage.getItem('faq-theme');
-            if (savedTheme) setTheme(savedTheme);
-        }
+        const savedTheme = safeStorage.getItem('faq-theme');
+        if (savedTheme) setTheme(savedTheme);
     }, []);
 
     // Save theme to localStorage when it changes
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('faq-theme', theme);
-        }
+        safeStorage.setItem('faq-theme', theme);
     }, [theme]);
 
     // Load voices

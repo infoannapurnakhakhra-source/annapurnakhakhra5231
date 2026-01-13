@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import safeStorage from "@/lib/safeStorage";
 import { X, MapPin, CreditCard, Truck, Wallet, CheckCircle, Mail, ShieldCheck, Loader2, RefreshCw, Plus, Minus, Trash2, Calculator, ShoppingCart } from 'lucide-react';
 
 export default function CartPage() {
@@ -36,7 +37,7 @@ export default function CartPage() {
 
   const customerShopifyId =
     typeof window !== "undefined"
-      ? localStorage.getItem("customerShopifyId")
+      ? safeStorage.getItem("customerShopifyId")
       : null;
 
   // Default empty address
@@ -385,7 +386,7 @@ export default function CartPage() {
   // UPDATE QUANTITY API
   const handleUpdateQuantity = async (lineId, quantity) => {
     try {
-      const cartId = cart?.id || localStorage.getItem("cartId");
+      const cartId = cart?.id || safeStorage.getItem("cartId");
       if (!cartId) return alert("Cart ID missing");
 
       const res = await fetch("/api/cart/update", {
@@ -398,7 +399,7 @@ export default function CartPage() {
 
       if (data.success) {
         setCart(data.cart);
-        localStorage.setItem("cartId", data.cart.id);
+        safeStorage.setItem("cartId", data.cart.id);
         setCalculationData(null);
         window.dispatchEvent(new Event("cart-updated"));
       } else {
@@ -413,7 +414,7 @@ export default function CartPage() {
   // REMOVE ITEM
   const handleRemoveItem = async (lineId) => {
     try {
-      const cartId = cart?.id || localStorage.getItem("cartId") || localStorage.getItem("guestCartId");
+      const cartId = cart?.id || safeStorage.getItem("cartId") || safeStorage.getItem("guestCartId");
       if (!cartId) return alert("Cart ID missing");
 
       const res = await fetch("/api/cart/remove", {
@@ -429,9 +430,9 @@ export default function CartPage() {
         setCalculationData(null);
 
         if (data.cart?.id) {
-          localStorage.setItem("cartId", data.cart.id);
+          safeStorage.setItem("cartId", data.cart.id);
           if (!customerShopifyId) {
-            localStorage.setItem("guestCartId", data.cart.id);
+            safeStorage.setItem("guestCartId", data.cart.id);
           }
         }
       } else {
@@ -485,7 +486,7 @@ export default function CartPage() {
           body: JSON.stringify({ customerShopifyId }),
         });
 
-        localStorage.setItem("recentOrderId", orderId);
+        safeStorage.setItem("recentOrderId", orderId);
         setAddress(defaultAddress);
         setAddressFetched(false);
         alert(`Order Placed Successfully!\nOrder ID: ${data?.order?.data?.draftOrderComplete?.draftOrder?.order?.name}`);
@@ -507,7 +508,7 @@ const handleProceedToCheckout = () => {
     .substr(2, 9)}`;
 
   if (typeof window !== "undefined") {
-    localStorage.setItem("abandoned_checkout_session_id", sessionId);
+    safeStorage.setItem("abandoned_checkout_session_id", sessionId);
   }
 
   const shopurl =
