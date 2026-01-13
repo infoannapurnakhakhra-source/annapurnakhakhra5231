@@ -2171,9 +2171,9 @@ export default function CartDrawer({
                         {[
                           {
                             value: "cod",
-                            label: "Cash on Delivery",
+                            label: "Partial Cash on Delivery (COD)",
                             description:
-                              "Pay with cash when your order is delivered",
+                              "Pay booking amount via UPI to confirm your order, rest at delivery.",
                             icon: Truck,
                             color: "#16a34a",
                           },
@@ -2182,66 +2182,95 @@ export default function CartDrawer({
                           const isSelected = paymentMethod === option.value;
 
                           return (
-                            <label
-                              key={option.value}
-                              className={`relative flex items-center gap-4 p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 
-          ${
-            isSelected
-              ? "border-[#7d4b0e] bg-amber-50 shadow-md ring-2 ring-[#7d4b0e]/20"
-              : "border-gray-200 hover:border-gray-400 hover:bg-gray-50"
-          }`}
-                            >
-                              <input
-                                type="radio"
-                                name="payment"
-                                value={option.value}
-                                checked={isSelected}
-                                onChange={(e) =>
-                                  setPaymentMethod(e.target.value)
-                                }
-                                className="w-5 h-5 text-[#7d4b0e] border-gray-300 focus:ring-[#7d4b0e] cursor-pointer accent-[#7d4b0e]"
-                              />
+                            <div key={option.value} className="space-y-3">
+                              <label
+                                className={`relative flex items-center gap-4 p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 
+            ${
+              isSelected
+                ? "border-[#7d4b0e] bg-amber-50 shadow-md ring-2 ring-[#7d4b0e]/20"
+                : "border-gray-200 hover:border-gray-400 hover:bg-gray-50"
+            }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name="payment"
+                                  value={option.value}
+                                  checked={isSelected}
+                                  onChange={(e) =>
+                                    setPaymentMethod(e.target.value)
+                                  }
+                                  className="w-5 h-5 text-[#7d4b0e] border-gray-300 focus:ring-[#7d4b0e] cursor-pointer accent-[#7d4b0e]"
+                                />
 
-                              <div className="flex items-center gap-4 flex-1">
-                                <div
-                                  className={`p-3 rounded-lg ${
-                                    isSelected
-                                      ? "bg-white shadow-sm"
-                                      : "bg-gray-100"
-                                  }`}
-                                >
-                                  <Icon
-                                    size={24}
-                                    style={{ color: option.color }}
-                                  />
-                                </div>
-
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-gray-900 text-lg">
-                                      {option.label}
-                                    </span>
-                                    {option.badge && (
-                                      <span className="px-2 py-1 text-xs font-medium text-white bg-gradient-to-r from-[#7d4b0e] to-[#a0522d] rounded-full">
-                                        {option.badge}
-                                      </span>
-                                    )}
+                                <div className="flex items-center gap-4 flex-1">
+                                  <div
+                                    className={`p-3 rounded-lg ${
+                                      isSelected
+                                        ? "bg-white shadow-sm"
+                                        : "bg-gray-100"
+                                    }`}
+                                  >
+                                    <Icon
+                                      size={24}
+                                      style={{ color: option.color }}
+                                    />
                                   </div>
-                                  <p className="text-sm text-gray-600 mt-1">
-                                    {option.description}
-                                  </p>
-                                </div>
-                              </div>
 
-                              {isSelected && (
-                                <div className="absolute top-2 right-2">
-                                  <CheckCircle
-                                    size={20}
-                                    className="text-[#7d4b0e]"
-                                  />
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-semibold text-gray-900 text-lg">
+                                        {option.label}
+                                      </span>
+                                      {option.badge && (
+                                        <span className="px-2 py-1 text-xs font-medium text-white bg-gradient-to-r from-[#7d4b0e] to-[#a0522d] rounded-full">
+                                          {option.badge}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                      {option.description}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {isSelected && (
+                                  <div className="absolute top-2 right-2">
+                                    <CheckCircle
+                                      size={20}
+                                      className="text-[#7d4b0e]"
+                                    />
+                                  </div>
+                                )}
+                              </label>
+
+                              {/* Show QR Code for Partial COD */}
+                              {isSelected && option.value === "cod" && (
+                                <div className="mt-2 p-4 bg-gradient-to-br from-white to-amber-50 border-2 border-amber-200 rounded-xl shadow-inner overflow-hidden">
+                                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                                    <div className="bg-white p-2 rounded-lg shadow-md flex-shrink-0">
+                                      <img
+                                        src="/QRCODE.jpg"
+                                        alt="UPI QR Code"
+                                        className="w-24 h-24 object-contain"
+                                      />
+                                    </div>
+                                    <div className="text-center sm:text-left">
+                                      <p className="text-[10px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                                        UPI ID
+                                      </p>
+                                      <div className="flex items-center justify-center sm:justify-start gap-2">
+                                        <code className="bg-amber-100/50 text-[#7d4b0e] font-mono font-bold px-2 py-1 rounded border border-amber-200 text-sm">
+                                          STOREVIEW.eazypay@okicici{" "}
+                                        </code>
+                                      </div>
+                                      <p className="text-[10px] text-gray-500 mt-2 italic">
+                                        Scan to pay booking amount
+                                      </p>
+                                    </div>
+                                  </div>
                                 </div>
                               )}
-                            </label>
+                            </div>
                           );
                         })}
                       </div>
