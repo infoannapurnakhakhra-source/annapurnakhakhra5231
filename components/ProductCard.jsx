@@ -1,8 +1,9 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ShoppingCart, Eye, Star } from "lucide-react";
 import ProductModal from "./ProductModal";
