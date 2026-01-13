@@ -14,6 +14,10 @@ export default function ClientSafetyWrapper({ children }) {
       } catch (e) {
         try {
           // If direct assignment fails (read-only), try defineProperty
+          try {
+             delete window[storageType];
+          } catch (delErr) { /* ignore */ }
+
           Object.defineProperty(window, storageType, {
             value: {
               getItem: () => null,

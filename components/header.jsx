@@ -11,6 +11,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import safeStorage from "@/lib/safeStorage";
 
 export default function Header({ cart, openCart }) {
   const router = useRouter();
@@ -60,9 +61,10 @@ useEffect(() => {
   // Customer data load (unchanged - perfect)
   useEffect(() => {
     const loadCustomerData = async () => {
+      // safeStorage handles typeof window check internally, but we can keep this for other reasons if needed
       if (typeof window === "undefined") return;
 
-      const customerId = localStorage.getItem("customerShopifyId");
+      const customerId = safeStorage.getItem("customerShopifyId");
 
       if (!customerId) {
         setIsLoggedIn(false);
@@ -96,7 +98,7 @@ useEffect(() => {
             setCustomerInitial("U");
           }
         } else {
-          localStorage.removeItem("customerShopifyId");
+          safeStorage.removeItem("customerShopifyId");
           setIsLoggedIn(false);
           setCustomerInitial("?");
           setCustomerName("");
@@ -131,13 +133,11 @@ useEffect(() => {
   }, [router]);
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem("customerShopifyId");
-      localStorage.removeItem("customerEmail");
-      localStorage.removeItem("customerFirstName");
-      localStorage.removeItem("cartId");
-      localStorage.removeItem("guestCartId");
-    }
+    safeStorage.removeItem("customerShopifyId");
+    safeStorage.removeItem("customerEmail");
+    safeStorage.removeItem("customerFirstName");
+    safeStorage.removeItem("cartId");
+    safeStorage.removeItem("guestCartId");
     setIsLoggedIn(false);
     setCustomerInitial("?");
     setCustomerName("");

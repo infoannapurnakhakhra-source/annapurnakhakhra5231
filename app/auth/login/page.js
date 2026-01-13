@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import safeStorage from "@/lib/safeStorage";
 
 export default function LoginPage() {
   const [phone, setPhone] = useState("");
@@ -63,7 +64,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const guestCartId = localStorage.getItem("guestCartId");
+      const guestCartId = safeStorage.getItem("guestCartId");
 
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
@@ -80,14 +81,14 @@ export default function LoginPage() {
 
       if (data.success) {
         const shopifyId = data.user.storeEntry.shopifyCustomerId;
-        localStorage.setItem("customerShopifyId", shopifyId);
+        safeStorage.setItem("customerShopifyId", shopifyId);
 
         // 🔥 TRUST backend first; respect merge result
         const merge = data.user?.merge;
         const finalCartId = data.cartId || (merge?.merged ? merge.mergedCartId : guestCartId);
 
         if (finalCartId) {
-          localStorage.setItem("cartId", finalCartId);
+          safeStorage.setItem("cartId", finalCartId);
         }
 
         // Ensure server-side association is stable by fetching cart with new context
@@ -95,11 +96,13 @@ export default function LoginPage() {
           const resCart = await fetch("/api/cart/get", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ customerShopifyId: shopifyId, cartId: localStorage.getItem("cartId") || null }),
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ customerShopifyId: shopifyId, cartId: safeStorage.getItem("cartId") || null }),
           });
           const cartData = await resCart.json();
           if (cartData?.cart?.id) {
-            localStorage.setItem("cartId", cartData.cart.id);
+            safeStorage.setItem("cartId", cartData.cart.id);
           }
         } catch (e) {
           // ignore - we still follow merge flag below
@@ -107,7 +110,7 @@ export default function LoginPage() {
 
         // Only clear guestCartId if backend actually merged the guest cart
         if (merge?.merged) {
-          localStorage.removeItem("guestCartId");
+          safeStorage.removeItem("guestCartId");
         }
 
         window.dispatchEvent(new Event("customer-updated"));

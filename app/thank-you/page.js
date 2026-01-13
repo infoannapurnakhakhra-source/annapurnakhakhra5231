@@ -3,14 +3,16 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { CheckCircle, Package, ShoppingBag, ArrowLeft } from "lucide-react";
+import safeStorage from "@/lib/safeStorage";
 
 export default function ThankYouPage() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order');
 
   // Clear recentOrderId after showing
+  // Clear recentOrderId after showing
   if (typeof window !== "undefined") {
-    localStorage.removeItem("recentOrderId");
+    safeStorage.removeItem("recentOrderId");
   }
 
   // Add this useEffect to track the purchase

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Header from "@/components/header";
 import CartDrawer from "@/components/CartDrawer";
+import safeStorage from "@/lib/safeStorage"; // Safe storage import
 
 export default function ClientLayout({ children }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -16,14 +17,9 @@ export default function ClientLayout({ children }) {
   /* ---------------- Refresh Cart Helper ---------------- */
   const refreshCart = async () => {
     try {
-      const customerShopifyId =
-        typeof window !== "undefined"
-          ? localStorage.getItem("customerShopifyId")
-          : null;
+      const customerShopifyId = safeStorage.getItem("customerShopifyId");
 
-      const cartId = typeof window !== "undefined"
-        ? localStorage.getItem("cartId") || localStorage.getItem("guestCartId") || null
-        : null;
+      const cartId = safeStorage.getItem("cartId") || safeStorage.getItem("guestCartId") || null;
 
       const res = await fetch("/api/cart/get", {
         method: "POST",
@@ -36,10 +32,10 @@ export default function ClientLayout({ children }) {
       // Persist returned cart id for guests and logged-in users
       if (data?.cart?.id) {
         if (customerShopifyId) {
-          localStorage.setItem("cartId", data.cart.id);
+          safeStorage.setItem("cartId", data.cart.id);
         } else {
-          localStorage.setItem("guestCartId", data.cart.id);
-          localStorage.setItem("cartId", data.cart.id);
+          safeStorage.setItem("guestCartId", data.cart.id);
+          safeStorage.setItem("cartId", data.cart.id);
         }
       }
 

@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import safeStorage from "@/lib/safeStorage";
 
 export default function ProductQuickViewModal({ isOpen, onClose, product }) {
     const router = useRouter();
@@ -26,7 +27,7 @@ export default function ProductQuickViewModal({ isOpen, onClose, product }) {
         e.stopPropagation();
         e.preventDefault();
 
-        const customerShopifyId = localStorage.getItem("customerShopifyId");
+        const customerShopifyId = safeStorage.getItem("customerShopifyId");
         // Guests are allowed to add to cart — do not require login here.
         // If not logged in we will pass customerShopifyId as null and rely on a local cart id (guestCartId/cartId).
 
@@ -57,7 +58,7 @@ export default function ProductQuickViewModal({ isOpen, onClose, product }) {
                     variantId: cleanVariantId,
                     quantity: 1,
                     customerShopifyId: customerShopifyId || null,
-                    cartId: localStorage.getItem("cartId") || localStorage.getItem("guestCartId") || null,
+                    cartId: safeStorage.getItem("cartId") || safeStorage.getItem("guestCartId") || null,
                 }),
             });
 
@@ -68,8 +69,8 @@ export default function ProductQuickViewModal({ isOpen, onClose, product }) {
             }
 
             if (data.cart?.id) {
-                localStorage.setItem("guestCartId", data.cart.id);
-                localStorage.setItem("cartId", data.cart.id);
+                safeStorage.setItem("guestCartId", data.cart.id);
+                safeStorage.setItem("cartId", data.cart.id);
             }
 
             // TRACKING CODE START

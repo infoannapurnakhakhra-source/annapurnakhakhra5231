@@ -17,6 +17,7 @@ import {
   Trash2,
   Plus,
 } from "lucide-react";
+import safeStorage from "@/lib/safeStorage";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -47,7 +48,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const customerId = localStorage.getItem("customerShopifyId");
+      const customerId = safeStorage.getItem("customerShopifyId");
       if (!customerId) {
         alert("Please login first!");
         router.push("/auth/login");
@@ -73,7 +74,7 @@ export default function ProfilePage() {
           });
         } else {
           alert("Failed to load profile. Please login again.");
-          localStorage.removeItem("customerShopifyId");
+          safeStorage.removeItem("customerShopifyId");
           router.push("/auth/login");
         }
       } catch (err) {
@@ -89,8 +90,8 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     alert("Logged out successfully!");
-    localStorage.removeItem("customerShopifyId");
-    localStorage.removeItem("cartId");
+    safeStorage.removeItem("customerShopifyId");
+    safeStorage.removeItem("cartId");
 
     if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event("customer-logout"));
@@ -151,7 +152,7 @@ export default function ProfilePage() {
   };
 
   const refreshUser = async () => {
-    const customerId = localStorage.getItem("customerShopifyId");
+    const customerId = safeStorage.getItem("customerShopifyId");
     try {
       const res = await fetch("/api/profile", {
         method: "POST",

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Slider from "react-slick";
 import { getAllProducts } from "@/lib/shopify";
 import ProductCard from "./ProductCard";
+import safeStorage from "@/lib/safeStorage";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -30,7 +31,7 @@ export default function RecentlyViewedProducts() {
 
   useEffect(() => {
     async function load() {
-      const ids = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
+      const ids = JSON.parse(safeStorage.getItem("recentlyViewed") || "[]");
       if (!ids.length) return;
 
       const allProducts = await getAllProducts(100);

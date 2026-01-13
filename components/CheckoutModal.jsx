@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import safeStorage from "@/lib/safeStorage";
 
 export default function CheckoutModal({ onClose, cart }) {
   const [step, setStep] = useState(1);
@@ -98,7 +99,7 @@ const placeOrder = async () => {
     if (data.success && data.orderId) {
           onClose();
 
-      localStorage.setItem("recentOrderId", data.orderId);
+      safeStorage.setItem("recentOrderId", data.orderId);
      
       if (confirm(`Order placed successfully!\n\nOrder ID: #${data.orderId}\n\nPress OK to continue`)) {
         window.location.replace(`/thank-you?order=${data.orderId}`);

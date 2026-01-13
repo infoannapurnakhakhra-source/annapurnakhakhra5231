@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import YouMayAlsoLike from "./Suggestedproductssection";
 import { X, Trash2, Plus, Minus, MapPin, CreditCard, Truck, Wallet, CheckCircle, Mail, ShieldCheck, Loader2, RefreshCw, ShoppingCart, Calculator, Smartphone } from "lucide-react";
+import safeStorage from "@/lib/safeStorage"; // Safe storage import
 
 export default function CartDrawer({
     cart: initialCart,
@@ -92,10 +93,7 @@ export default function CartDrawer({
         phone: "",
     });
 
-    const customerShopifyId =
-        typeof window !== "undefined"
-            ? localStorage.getItem("customerShopifyId")
-            : null;
+    const customerShopifyId = safeStorage.getItem("customerShopifyId");
 
     const defaultAddress = {
         address1: "",
@@ -112,7 +110,7 @@ export default function CartDrawer({
     // ✅ Listen for successful login to reload cart
     useEffect(() => {
         const handleCustomerUpdate = () => {
-            const newCustomerId = localStorage.getItem("customerShopifyId");
+            const newCustomerId = safeStorage.getItem("customerShopifyId");
             if (newCustomerId) {
                 setIsLoggedIn(true);
                 loadCartAfterLogin();
@@ -125,7 +123,7 @@ export default function CartDrawer({
 
     // ✅ Function to reload cart after login
     const loadCartAfterLogin = async () => {
-        const customerId = localStorage.getItem("customerShopifyId");
+        const customerId = safeStorage.getItem("customerShopifyId");
         if (!customerId) return;
 
         try {
@@ -135,7 +133,7 @@ export default function CartDrawer({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     customerShopifyId: customerId,
-                    cartId: localStorage.getItem("cartId") || null,
+                    cartId: safeStorage.getItem("cartId") || null,
                 }),
             });
 
@@ -143,7 +141,7 @@ export default function CartDrawer({
             if (data?.cart) {
                 setCart(data.cart);
                 if (data.cart.id) {
-                    localStorage.setItem("cartId", data.cart.id);
+                    safeStorage.setItem("cartId", data.cart.id);
                 }
             }
 
@@ -255,7 +253,7 @@ export default function CartDrawer({
 
     // ✅ EXTRACT fetchUserProfile as a standalone function
     const fetchUserProfile = async () => {
-        const customerId = customerShopifyId || localStorage.getItem("customerShopifyId");
+        const customerId = customerShopifyId || safeStorage.getItem("customerShopifyId");
         if (!customerId) {
             console.log("❌ No customerShopifyId in localStorage");
             setIsLoggedIn(false);
@@ -325,7 +323,7 @@ export default function CartDrawer({
 
                 const body = {
                     customerShopifyId: customerShopifyId || null,
-                    cartId: localStorage.getItem("cartId") || localStorage.getItem("guestCartId") || null,
+                    cartId: safeStorage.getItem("cartId") || safeStorage.getItem("guestCartId") || null,
                 };
 
                 const res = await fetch("/api/cart/get", {
@@ -338,10 +336,10 @@ export default function CartDrawer({
 
                 if (data?.cart?.id) {
                     if (customerShopifyId) {
-                        localStorage.setItem("cartId", data.cart.id);
+                        safeStorage.setItem("cartId", data.cart.id);
                     } else {
-                        localStorage.setItem("guestCartId", data.cart.id);
-                        localStorage.setItem("cartId", data.cart.id);
+                        safeStorage.setItem("guestCartId", data.cart.id);
+                        safeStorage.setItem("cartId", data.cart.id);
                     }
                 }
 
@@ -423,7 +421,7 @@ export default function CartDrawer({
                     console.log("✅ Applied free shipping rule");
                 }
                 setCalculationData(processedData);
-                const sessionId = localStorage.getItem("abandoned_checkout_session_id");
+                const sessionId = safeStorage.getItem("abandoned_checkout_session_id");
                 if (sessionId) {
                     const shopurl = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || "your-store.myshopify.com";
 
@@ -638,7 +636,7 @@ export default function CartDrawer({
         setLoading(true);
 
         try {
-            const guestCartId = localStorage.getItem("guestCartId");
+            const guestCartId = safeStorage.getItem("guestCartId");
 
             const res = await fetch("/api/auth/verify-otp", {
                 method: "POST",
@@ -655,24 +653,24 @@ export default function CartDrawer({
 
             if (data.success) {
                 const shopifyId = data.user.storeEntry.shopifyCustomerId;
-                localStorage.setItem("customerShopifyId", shopifyId);
+                safeStorage.setItem("customerShopifyId", shopifyId);
 
                 const merge = data.user?.merge;
                 const finalCartId = data.cartId || (merge?.merged ? merge.mergedCartId : guestCartId);
 
                 if (finalCartId) {
-                    localStorage.setItem("cartId", finalCartId);
+                    safeStorage.setItem("cartId", finalCartId);
                 }
 
                 try {
                     const resCart = await fetch("/api/cart/get", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ customerShopifyId: shopifyId, cartId: localStorage.getItem("cartId") || null }),
+                        body: JSON.stringify({ customerShopifyId: shopifyId, cartId: safeStorage.getItem("cartId") || null }),
                     });
                     const cartData = await resCart.json();
                     if (cartData?.cart?.id) {
-                        localStorage.setItem("cartId", cartData.cart.id);
+                        safeStorage.setItem("cartId", cartData.cart.id);
                         setCart(cartData.cart);
                     }
                 } catch (e) {
@@ -680,7 +678,7 @@ export default function CartDrawer({
                 }
 
                 if (merge?.merged) {
-                    localStorage.removeItem("guestCartId");
+                    safeStorage.removeItem("guestCartId");
                 }
 
                 setIsLoggedIn(true);
@@ -705,7 +703,7 @@ export default function CartDrawer({
     // Internal update quantity handler
     const handleUpdateQuantity = async (lineId, quantity) => {
         try {
-            const cartId = cart?.id || localStorage.getItem("cartId");
+            const cartId = cart?.id || safeStorage.getItem("cartId");
             if (!cartId) return alert("Cart ID missing");
             const res = await fetch("/api/cart/update", {
                 method: "POST",
@@ -715,7 +713,7 @@ export default function CartDrawer({
             const data = await res.json();
             if (data.success) {
                 setCart(data.cart);
-                localStorage.setItem("cartId", data.cart.id);
+                safeStorage.setItem("cartId", data.cart.id);
                 setCalculationData(null);
                 if (onUpdateQuantity) {
                     onUpdateQuantity(lineId, quantity);
@@ -733,7 +731,7 @@ export default function CartDrawer({
     // Internal remove item handler
     const handleRemoveItem = async (lineId) => {
         try {
-            const cartId = cart?.id || localStorage.getItem("cartId") || localStorage.getItem("guestCartId");
+            const cartId = cart?.id || safeStorage.getItem("cartId") || safeStorage.getItem("guestCartId");
             if (!cartId) {
                 return alert("Cart ID missing");
             }
@@ -748,9 +746,9 @@ export default function CartDrawer({
                 setCalculationData(null);
 
                 if (data.cart?.id) {
-                    localStorage.setItem("cartId", data.cart.id);
+                    safeStorage.setItem("cartId", data.cart.id);
                     if (!customerShopifyId) {
-                        localStorage.setItem("guestCartId", data.cart.id);
+                        safeStorage.setItem("guestCartId", data.cart.id);
                     }
                 }
 
