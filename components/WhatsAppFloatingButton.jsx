@@ -26,7 +26,7 @@ export default function WhatsAppFloatingButton() {
 
     return (
         <a
-            href="https://wa.me/7567178118" // Replace with your number
+            href="https://wa.me/7435078118" // Replace with your number
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Chat on WhatsApp"
