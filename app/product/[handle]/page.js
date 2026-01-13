@@ -25,7 +25,7 @@ export default async function ProductDetailsPage({ params }) {
       <Reviews productId={product.id} />
       <YouMayAlsoLikeServer />
       <RecentlyViewedProducts/>
-      <FAQSection />
+      {/* <FAQSection /> */}
       <WhatsAppCommunitySection/>
     </>
   );
