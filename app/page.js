@@ -24,11 +24,11 @@ export default async function HomePage() {
         <p className="mt-4 text-[#cc760e] text-base sm:text-lg md:text-xl leading-relaxed text-center m-2">
           Freshly crafted, lovingly made. Explore our bestsellers.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
-        </div>
+        </div> */}
       </div>
       <KhakhraMakingProcess/>    
       <CraftsmanshipHeritageSection/>    
