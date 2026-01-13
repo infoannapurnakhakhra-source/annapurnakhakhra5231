@@ -2173,7 +2173,7 @@ export default function CartDrawer({
                             value: "cod",
                             label: "Partial Cash on Delivery (COD)",
                             description:
-                              "Pay booking amount via UPI to confirm your order, rest at delivery.",
+                              "Cash on Delivery is available. To confirm and dispatch your order, a ₹50 advance payment is required. Kindly pay ₹50 via the QR code below and contact us at +91 7435078118 once the payment is done.",
                             icon: Truck,
                             color: "#16a34a",
                           },
