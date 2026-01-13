@@ -1,19 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Phone, Mail, MapPin, ChevronDown, ChevronUp } from "lucide-react";
 import DownloadBrochure from "./DownloadBrochure";
+
 export default function Footer() {
   const [openSection, setOpenSection] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const pathname = usePathname();
+  const isProductPage = pathname.startsWith("/product/");
+
+  if (!mounted) return null;
 
   const toggleSection = (name) => {
     setOpenSection(openSection === name ? null : name);
   };
 
-  const pathname = usePathname();
-  const isProductPage = pathname.startsWith("/product/");
 
   const quickLinks = [
     { name: "Home", path: "/" },
