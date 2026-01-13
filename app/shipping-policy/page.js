@@ -173,7 +173,7 @@ export default function ShippingPolicy() {
             </div>
             <div className="flex flex-col items-center">
               <Phone className="mb-3" size={36} />
-              <p>+91-75671 78118</p>
+              <p>+91-74350 78118</p>
             </div>
           </div>
           <p className="mt-10 text-xl italic">
