@@ -51,8 +51,8 @@ export default async function HomePage() {
           ))}
         </div>
       </div>
-      {/* <KhakhraMakingProcess/>    
-      <CraftsmanshipHeritageSection/>    
+      <KhakhraMakingProcess/>    
+      {/* <CraftsmanshipHeritageSection/>    
       <ShopByOilPreferenceSection/>    
       <TestimonialsCarousel/>    
       <CallToActionSection/>    
