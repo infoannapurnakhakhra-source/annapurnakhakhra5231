@@ -73,9 +73,9 @@ export default function RootLayout({ children }) {
             <WhatsAppFloatingButton />
             <GoToTopButton />
           </ClientLayout>
+          <Footer />
         </ClientSafetyWrapper>
 
-        <Footer />
       </body>
     </html>
   );
