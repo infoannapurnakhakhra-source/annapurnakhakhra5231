@@ -11,8 +11,9 @@ import WhatsAppCommunitySection from "@/components/WhatsAppCommunitySection";
 import { notFound } from "next/navigation";
 
 export default async function ProductDetailsPage({ params }) {
-  const { handle } = params;
+  const { handle } = await params;
 
+  console.log(handle)
   const product = await getProductByHandle(handle);
   if (!product) notFound();
 
