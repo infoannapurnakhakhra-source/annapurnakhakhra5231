@@ -6,32 +6,34 @@ export default function ClientSafetyWrapper({ children }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    const safelyMockStorage = (storageType) => {
+      try {
+        const testKey = "__scope_test";
+        window[storageType].setItem(testKey, "1");
+        window[storageType].removeItem(testKey);
+      } catch (e) {
+        try {
+          // If direct assignment fails (read-only), try defineProperty
+          Object.defineProperty(window, storageType, {
+            value: {
+              getItem: () => null,
+              setItem: () => {},
+              removeItem: () => {},
+              clear: () => {},
+            },
+            writable: true,
+            configurable: true,
+          });
+        } catch (innerError) {
+          console.warn(`Failed to mock ${storageType}:`, innerError);
+        }
+      }
+    };
+
+    safelyMockStorage("localStorage");
+    safelyMockStorage("sessionStorage");
+
     setMounted(true);
-
-    // 🔒 GLOBAL SAFETY FOR FB IN-APP BROWSER
-    try {
-      localStorage.setItem("__test", "1");
-      localStorage.removeItem("__test");
-    } catch {
-      window.localStorage = {
-        getItem: () => null,
-        setItem: () => {},
-        removeItem: () => {},
-        clear: () => {},
-      };
-    }
-
-    try {
-      sessionStorage.setItem("__test", "1");
-      sessionStorage.removeItem("__test");
-    } catch {
-      window.sessionStorage = {
-        getItem: () => null,
-        setItem: () => {},
-        removeItem: () => {},
-        clear: () => {},
-      };
-    }
   }, []);
 
   // 🚫 Prevent hydration crash
