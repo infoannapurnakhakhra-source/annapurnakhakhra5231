@@ -6,6 +6,7 @@ import Slider from "react-slick";
 import { Star } from "lucide-react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import safeStorage from "@/lib/safeStorage";
 
 const MAX_VISIBLE = 40;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
@@ -96,7 +97,7 @@ export default function YouMayAlsoLike({ currentCartItems = [] }) {
     e.preventDefault();
     e.stopPropagation();
 
-    const customerShopifyId = localStorage.getItem("customerShopifyId");
+    const customerShopifyId = safeStorage.getItem("customerShopifyId");
 
     let variantId =
       product.variantId ||
@@ -124,8 +125,9 @@ export default function YouMayAlsoLike({ currentCartItems = [] }) {
           quantity: 1,
           customerShopifyId: customerShopifyId || null,
           cartId:
-            localStorage.getItem("cartId") ||
-            localStorage.getItem("guestCartId") ||
+          cartId:
+            safeStorage.getItem("cartId") ||
+            safeStorage.getItem("guestCartId") ||
             null,
         }),
       });
@@ -136,8 +138,8 @@ export default function YouMayAlsoLike({ currentCartItems = [] }) {
       }
 
       if (data.cart?.id) {
-        localStorage.setItem("guestCartId", data.cart.id);
-        localStorage.setItem("cartId", data.cart.id);
+        safeStorage.setItem("guestCartId", data.cart.id);
+        safeStorage.setItem("cartId", data.cart.id);
       }
 
       // TRACKING CODE START

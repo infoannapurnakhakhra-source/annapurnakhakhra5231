@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { HandCoins, Award, Package, Lock, FlaskConical, Leaf, Truck, ChevronDown, ChevronUp, ShoppingCart } from "lucide-react";
 import AskExpert from "@/components/AskExpert";
 import addToCartClient from "@/lib/cartClient";
+import safeStorage from "@/lib/safeStorage";
 
 export default function ProductDetailsClient({ product }) {
   const [openIndexes, setOpenIndexes] = useState([]);
@@ -21,7 +22,7 @@ export default function ProductDetailsClient({ product }) {
     e.stopPropagation();
     e.preventDefault();
 
-    const customerShopifyId = localStorage.getItem("customerShopifyId");
+    const customerShopifyId = safeStorage.getItem("customerShopifyId");
     // Guests may add to cart — we'll pass customerShopifyId null if not signed in.
 
     // Use the selected variant, not the default
@@ -231,7 +232,7 @@ export default function ProductDetailsClient({ product }) {
   useEffect(() => {
     if (!product?.id) return;
 
-    let viewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
+    let viewed = JSON.parse(safeStorage.getItem("recentlyViewed") || "[]");
 
     // Remove existing ID to avoid duplicates
     viewed = viewed.filter((id) => id !== product.id);
@@ -241,7 +242,7 @@ export default function ProductDetailsClient({ product }) {
     // limit
     viewed = viewed.slice(0, 10);
 
-    localStorage.setItem("recentlyViewed", JSON.stringify(viewed));
+    safeStorage.setItem("recentlyViewed", JSON.stringify(viewed));
   }, [product]);
 
 

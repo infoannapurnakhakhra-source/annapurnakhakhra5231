@@ -1,12 +1,13 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Eye, Star } from "lucide-react";
+import { ShoppingCart, Eye, Star } from "lucide-react";
 import ProductModal from "./ProductModal";
 import { getProductByHandle } from "@/lib/shopify";
+import safeStorage from "@/lib/safeStorage";
 
 export default function ProductCard({ product }) {
     const [loading, setLoading] = useState(false);
@@ -61,7 +62,7 @@ export default function ProductCard({ product }) {
         e.preventDefault();
         e.stopPropagation();
 
-        const customerShopifyId = localStorage.getItem("customerShopifyId");
+        const customerShopifyId = safeStorage.getItem("customerShopifyId");
         // Allow guests to add to cart (we'll pass customerShopifyId null when not logged in).
 
         let variantId =
@@ -89,7 +90,7 @@ export default function ProductCard({ product }) {
                     variantId: cleanVariantId,
                     quantity: 1,
                     customerShopifyId: customerShopifyId || null,
-                    cartId: localStorage.getItem("cartId") || localStorage.getItem("guestCartId") || null,
+                    cartId: safeStorage.getItem("cartId") || safeStorage.getItem("guestCartId") || null,
                 }),
             });
 
@@ -99,8 +100,8 @@ export default function ProductCard({ product }) {
             }
 
             if (data.cart?.id) {
-                localStorage.setItem("guestCartId", data.cart.id);
-                localStorage.setItem("cartId", data.cart.id);
+                safeStorage.setItem("guestCartId", data.cart.id);
+                safeStorage.setItem("cartId", data.cart.id);
             }
 
             // TRACKING CODE START
