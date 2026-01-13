@@ -1,7 +1,18 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { HandCoins, Award, Package, Lock, FlaskConical, Leaf, Truck, ChevronDown, ChevronUp, ShoppingCart } from "lucide-react";
+import {
+  HandCoins,
+  Award,
+  Package,
+  Lock,
+  FlaskConical,
+  Leaf,
+  Truck,
+  ChevronDown,
+  ChevronUp,
+  ShoppingCart,
+} from "lucide-react";
 import AskExpert from "@/components/AskExpert";
 import addToCartClient from "@/lib/cartClient";
 import safeStorage from "@/lib/safeStorage";
@@ -38,7 +49,9 @@ export default function ProductDetailsClient({ product }) {
       return;
     }
 
-    const cleanVariantId = variantId.includes("gid://") ? variantId.split("/").pop() : variantId;
+    const cleanVariantId = variantId.includes("gid://")
+      ? variantId.split("/").pop()
+      : variantId;
 
     setLoading(true);
 
@@ -51,7 +64,14 @@ export default function ProductDetailsClient({ product }) {
       });
 
       // open-cart-drawer is useful for UI hooks
-      window.dispatchEvent(new Event("open-cart-drawer"));
+      // window.dispatchEvent(new Event("open-cart-drawer"));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          typeof Event === "function"
+            ? new Event("open-cart-drawer")
+            : document.createEvent("Event")
+        );
+      }
     } catch (err) {
       console.error("Add to cart error:", err);
       alert(`Failed to add: ${err.message}`);
@@ -59,7 +79,6 @@ export default function ProductDetailsClient({ product }) {
       setLoading(false);
     }
   };
-
 
   if (!product) {
     return <div className="text-center py-20">Product not found</div>;
@@ -113,7 +132,9 @@ export default function ProductDetailsClient({ product }) {
       return () => clearInterval(timer);
     }, []);
 
-    return <span className="font-bold text-orange-600 text-lg">{timeLeft}</span>;
+    return (
+      <span className="font-bold text-orange-600 text-lg">{timeLeft}</span>
+    );
   }
 
   const scrollRef = useRef(null);
@@ -173,37 +194,63 @@ export default function ProductDetailsClient({ product }) {
   //   return () => window.removeEventListener("wheel", handleWheel);
   // }, [isCartOpen]);
 
+  // useEffect(() => {
+  //   if (isCartOpen) return;
+
+  //   const el = scrollRef.current;
+  //   if (!el) return;
+
+  //   function handleWheel(e) {
+  //     // same intent: disable after page scroll
+  //     if (window.scrollY > 100) return;
+
+  //     const delta = e.deltaY;
+
+  //     const atTop = el.scrollTop <= 0;
+  //     const atBottom =
+  //       Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight - 1;
+
+  //     // SAME behaviour: inner scroll first
+  //     if ((delta > 0 && !atBottom) || (delta < 0 && !atTop)) {
+  //       e.preventDefault();
+  //       el.scrollTop += delta;
+  //     }
+  //   }
+
+  //   window.addEventListener("wheel", handleWheel, { passive: false });
+
+  //   return () => {
+  //     window.removeEventListener("wheel", handleWheel);
+  //   };
+  // }, [isCartOpen]);
 
   useEffect(() => {
-    if (isCartOpen) return;
+    if (typeof window === "undefined") return;
+
+    // 🚫 Disable wheel logic on touch devices (Android / iOS)
+    if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+      return;
+    }
 
     const el = scrollRef.current;
     if (!el) return;
 
-    function handleWheel(e) {
-      // same intent: disable after page scroll
+    const handleWheel = (e) => {
+      // Extra safety
+      if (!e || typeof e.preventDefault !== "function") return;
+
       if (window.scrollY > 100) return;
 
-      const delta = e.deltaY;
-
-      const atTop = el.scrollTop <= 0;
-      const atBottom =
-        Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight - 1;
-
-      // SAME behaviour: inner scroll first
-      if ((delta > 0 && !atBottom) || (delta < 0 && !atTop)) {
-        e.preventDefault();
-        el.scrollTop += delta;
-      }
-    }
+      e.preventDefault();
+      el.scrollTop += e.deltaY;
+    };
 
     window.addEventListener("wheel", handleWheel, { passive: false });
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
     };
-  }, [isCartOpen]);
-
+  }, []);
 
   const [showStickyBox, setShowStickyBox] = useState(false);
   const [closedByUser, setClosedByUser] = useState(false);
@@ -245,15 +292,6 @@ export default function ProductDetailsClient({ product }) {
     safeStorage.setItem("recentlyViewed", JSON.stringify(viewed));
   }, [product]);
 
-
-
-
-
-
-
-
-
-
   useEffect(() => {
     const openCart = () => setIsCartOpen(true);
     const closeCart = () => setIsCartOpen(false);
@@ -276,8 +314,15 @@ export default function ProductDetailsClient({ product }) {
         content_name: product.title,
         content_ids: [product.id],
         content_type: "product",
-        value: Number(product.priceRange?.minVariantPrice?.amount || selectedVariant?.price?.amount || 0),
-        currency: product.priceRange?.minVariantPrice?.currencyCode || selectedVariant?.price?.currencyCode || "INR",
+        value: Number(
+          product.priceRange?.minVariantPrice?.amount ||
+            selectedVariant?.price?.amount ||
+            0
+        ),
+        currency:
+          product.priceRange?.minVariantPrice?.currencyCode ||
+          selectedVariant?.price?.currencyCode ||
+          "INR",
       });
     }
 
@@ -290,17 +335,11 @@ export default function ProductDetailsClient({ product }) {
             item_id: product.id,
             item_name: product.title,
             price: Number(product.priceRange?.minVariantPrice?.amount || 0),
-          }
-        ]
+          },
+        ],
       });
     }
   }, [product]);
-
-
-
-
-
-
 
   return (
     <>
@@ -333,10 +372,11 @@ export default function ProductDetailsClient({ product }) {
                     <div
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`relative overflow-hidden rounded-lg shadow-md bg-white p-2 cursor-pointer transition-all duration-300 transform hover:scale-105 ${selectedImageIndex === index
-                        ? "ring-2 ring-[#7d4b0e] shadow-lg"
-                        : "hover:shadow-lg"
-                        }`}
+                      className={`relative overflow-hidden rounded-lg shadow-md bg-white p-2 cursor-pointer transition-all duration-300 transform hover:scale-105 ${
+                        selectedImageIndex === index
+                          ? "ring-2 ring-[#7d4b0e] shadow-lg"
+                          : "hover:shadow-lg"
+                      }`}
                     >
                       <img
                         src={image.url}
@@ -372,13 +412,16 @@ export default function ProductDetailsClient({ product }) {
               </h1>
 
               <div className="flex gap-2 flex-wrap">
-                {product.tags && product.tags.map((tag, idx) => (
-                  <span key={idx} className="inline-block bg-yellow-500 text-white text-xs sm:text-sm font-bold px-3 py-1 rounded-full shadow-md">
-                    {tag}
-                  </span>
-                ))}
+                {product.tags &&
+                  product.tags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-block bg-yellow-500 text-white text-xs sm:text-sm font-bold px-3 py-1 rounded-full shadow-md"
+                    >
+                      {tag}
+                    </span>
+                  ))}
               </div>
-
 
               <p className="text-black text-sm text-gray-500">
                 Tax Excluded.{" "}
@@ -387,9 +430,9 @@ export default function ProductDetailsClient({ product }) {
                   className="font-medium text-[#7d4b0e] hover:underline"
                 >
                   Shipping
-                </a> calculated at checkout.
+                </a>{" "}
+                calculated at checkout.
               </p>
-
 
               {/* Easebuzz Money Back Promise Badge */}
               <button
@@ -409,7 +452,9 @@ export default function ProductDetailsClient({ product }) {
                       <div className="font-semibold text-gray-800 text-sm flex items-center gap-1">
                         Easebuzz
                       </div>
-                      <div className="text-xs text-gray-700 font-medium">Money Back Promise</div>
+                      <div className="text-xs text-gray-700 font-medium">
+                        Money Back Promise
+                      </div>
                     </div>
                   </div>
 
@@ -423,11 +468,13 @@ export default function ProductDetailsClient({ product }) {
                 <div className="mt-3 border-t border-pink-200 pt-2 flex items-center gap-2">
                   <span className="text-red-500 text-lg">⚠</span>
                   <span className="text-xs">
-                    <span className="font-semibold text-red-500">Get 100% refund</span> on non-delivery or defects
+                    <span className="font-semibold text-red-500">
+                      Get 100% refund
+                    </span>{" "}
+                    on non-delivery or defects
                   </span>
                 </div>
               </button>
-
 
               {/* PRICE - Now dynamic based on selected variant */}
               <div className="bg-amber-50 rounded-2xl p-6 border border-orange-100 shadow-md">
@@ -457,7 +504,6 @@ export default function ProductDetailsClient({ product }) {
                 )}
               </div>
 
-
               {/* VARIANT SELECTOR */}
               {product.variants.length > 1 && (
                 <div className="bg-white rounded-2xl p-6 shadow-lg border border-[#7d4b0e]/20">
@@ -479,10 +525,11 @@ export default function ProductDetailsClient({ product }) {
                           className={`
               relative rounded-xl px-4 py-4 text-center font-medium
               border-2 transition-all duration-200 cursor-pointer
-              ${isActive
-                              ? "border-[#7d4b0e] bg-[#7d4b0e] text-white shadow-md scale-[1.03]"
-                              : "border-[#7d4b0e]/40 text-[#7d4b0e] hover:border-[#7d4b0e]"
-                            }
+              ${
+                isActive
+                  ? "border-[#7d4b0e] bg-[#7d4b0e] text-white shadow-md scale-[1.03]"
+                  : "border-[#7d4b0e]/40 text-[#7d4b0e] hover:border-[#7d4b0e]"
+              }
             `}
                         >
                           {/* Selected check */}
@@ -501,7 +548,6 @@ export default function ProductDetailsClient({ product }) {
                   </div>
                 </div>
               )}
-
 
               {/* QUANTITY */}
               <div className="flex items-center gap-6">
@@ -527,19 +573,27 @@ export default function ProductDetailsClient({ product }) {
                   >
                     +
                   </button>
-
                 </div>
 
                 {/* ADD TO CART */}
                 <button
                   onClick={handleAddToCart}
-                  disabled={loading || !selectedVariant || selectedVariant?.availableForSale === false}
-                  className={`w-full font-bold py-6 px-8 rounded-lg text-lg shadow-lg transition-all duration-300 ${selectedVariant?.availableForSale === false
-                    ? "bg-[#7d4b0e9c] text-white cursor-not-allowed"
-                    : "bg-[#7d4b0e] text-white hover:bg-yellow-600 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                    }`}
+                  disabled={
+                    loading ||
+                    !selectedVariant ||
+                    selectedVariant?.availableForSale === false
+                  }
+                  className={`w-full font-bold py-6 px-8 rounded-lg text-lg shadow-lg transition-all duration-300 ${
+                    selectedVariant?.availableForSale === false
+                      ? "bg-[#7d4b0e9c] text-white cursor-not-allowed"
+                      : "bg-[#7d4b0e] text-white hover:bg-yellow-600 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  }`}
                 >
-                  {selectedVariant?.availableForSale === false ? "Restocking Soon" : loading ? "Adding to Cart..." : "Add to Cart"}
+                  {selectedVariant?.availableForSale === false
+                    ? "Restocking Soon"
+                    : loading
+                    ? "Adding to Cart..."
+                    : "Add to Cart"}
                 </button>
               </div>
 
@@ -560,9 +614,13 @@ export default function ProductDetailsClient({ product }) {
 
                       const orderDate = today;
                       const dispatchStart = new Date(today.getTime() + oneDay);
-                      const dispatchEnd = new Date(today.getTime() + 2 * oneDay);
+                      const dispatchEnd = new Date(
+                        today.getTime() + 2 * oneDay
+                      );
 
-                      const deliveryStartCandidate = new Date(today.getTime() + 3 * oneDay);
+                      const deliveryStartCandidate = new Date(
+                        today.getTime() + 3 * oneDay
+                      );
                       const endOfDay = new Date(today);
                       endOfDay.setHours(23, 59, 59, 999);
 
@@ -571,7 +629,9 @@ export default function ProductDetailsClient({ product }) {
                           ? new Date(today.getTime() + 4 * oneDay)
                           : deliveryStartCandidate;
 
-                      const deliveryEnd = new Date(today.getTime() + 7 * oneDay);
+                      const deliveryEnd = new Date(
+                        today.getTime() + 7 * oneDay
+                      );
 
                       // Format: 11/12
                       const format = (d) =>
@@ -587,8 +647,12 @@ export default function ProductDetailsClient({ product }) {
                             <div className="w-12 h-12 bg-[#7d4b0e] rounded-full flex items-center justify-center shadow-lg">
                               🛍️
                             </div>
-                            <p className="mt-3 text-sm font-semibold text-gray-700">Order</p>
-                            <p className="text-xs text-gray-600">{format(orderDate)}</p>
+                            <p className="mt-3 text-sm font-semibold text-gray-700">
+                              Order
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              {format(orderDate)}
+                            </p>
                           </div>
 
                           {/* Step 2 - Dispatch */}
@@ -596,7 +660,9 @@ export default function ProductDetailsClient({ product }) {
                             <div className="w-12 h-12 bg-[#7d4b0e] rounded-full flex items-center justify-center shadow-lg">
                               ✈️
                             </div>
-                            <p className="mt-3 text-sm font-semibold text-gray-700">Order Dispatch</p>
+                            <p className="mt-3 text-sm font-semibold text-gray-700">
+                              Order Dispatch
+                            </p>
                             <p className="text-xs text-gray-600">
                               {format(dispatchStart)} – {format(dispatchEnd)}
                             </p>
@@ -607,7 +673,9 @@ export default function ProductDetailsClient({ product }) {
                             <div className="w-12 h-12 bg-[#7d4b0e] rounded-full flex items-center justify-center shadow-lg">
                               📦
                             </div>
-                            <p className="mt-3 text-sm font-semibold text-gray-700">Delivery</p>
+                            <p className="mt-3 text-sm font-semibold text-gray-700">
+                              Delivery
+                            </p>
                             <p className="text-xs text-gray-600">
                               {format(deliveryStart)} – {format(deliveryEnd)}
                             </p>
@@ -615,7 +683,6 @@ export default function ProductDetailsClient({ product }) {
                         </>
                       );
                     })()}
-
                   </div>
                 </div>
 
@@ -634,25 +701,37 @@ export default function ProductDetailsClient({ product }) {
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">👉</span>
                       <p className="text-gray-800 font-medium">
-                        Order within the next <CountdownTimer /> for <strong>dispatch today</strong>, and you'll receive your package between{" "}
+                        Order within the next <CountdownTimer /> for{" "}
+                        <strong>dispatch today</strong>, and you'll receive your
+                        package between{" "}
                         <strong>
-                          {new Date(Date.now() + 3 * 86400000).toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric' })}
+                          {new Date(
+                            Date.now() + 3 * 86400000
+                          ).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "numeric",
+                          })}
                           {" – "}
-                          {new Date(Date.now() + 7 * 86400000).toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric' })}
+                          {new Date(
+                            Date.now() + 7 * 86400000
+                          ).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "numeric",
+                          })}
                         </strong>
                       </p>
                     </div>
                   </div>
                 </div>
-
               </div>
-
 
               <div className="bg-green-50 rounded-xl p-5 flex items-start gap-4 border border-green-200 shadow-sm">
                 <HandCoins className="w-7 h-7 text-gray-700" />
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Rewards</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Rewards
+                  </h3>
                   <p className="text-gray-700 text-sm">
                     Shop for Rs.999/- & Get Free Shipping
                   </p>
@@ -685,86 +764,111 @@ export default function ProductDetailsClient({ product }) {
                 </div>
               </div>
 
-
-
               {/* metafeilds */}
 
               <div className="space-y-3">
-                {product.metafields.map((mf, index) => {
-                  const isOpen = openIndexes.includes(index);
+                {Array.isArray(product.metafields) &&
+                  product.metafields.map((mf, index) => {
+                    const isOpen = openIndexes.includes(index);
 
-                  const toggle = () => {
-                    setOpenIndexes(prev =>
-                      isOpen ? prev.filter(i => i !== index) : [...prev, index]
-                    );
-                  };
+                    const toggle = () => {
+                      setOpenIndexes((prev) =>
+                        isOpen
+                          ? prev.filter((i) => i !== index)
+                          : [...prev, index]
+                      );
+                    };
 
-                  // Render the first metafield as a UL, others based on key
-                  let content;
-                  if (index === 0) {
-                    // First metafield value as list
-                    const values = Array.isArray(mf.value) ? mf.value : JSON.parse(mf.value);
-                    content = (
-                      <ul className="list-none  space-y-1 text-gray-700">
-                        {values.map((val, i) => (
-                          <li key={i}>{val}</li>
-                        ))}
-                      </ul>
-                    );
-                  } else if (mf.key === "self_life") {
-                    content = <span className="text-gray-700">{mf.value}</span>;
-                  } else if (mf.key === "allergy_advice") {
-                    content = mf.value.split("\n").map((line, i) => (
-                      <p key={i} className="text-gray-700 mb-1">{line}</p>
-                    ));
-                  } else {
-                    content = <span className="text-gray-700">{mf.value}</span>;
-                  }
+                    // Render the first metafield as a UL, others based on key
+                    let content;
+                    if (index === 0) {
+                      // First metafield value as list
+                      // const values = Array.isArray(mf.value)
+                      //   ? mf.value
+                      //   : JSON.parse(mf.value);
+                      let values = [];
+                      try {
+                        values = Array.isArray(mf.value)
+                          ? mf.value
+                          : JSON.parse(mf.value);
+                      } catch {
+                        values = [];
+                      }
 
-                  return (
-                    <div
-                      key={`${mf.namespace}.${mf.key}`}
-                      className="overflow-hidden rounded-xl bg-white shadow-md border border-gray-200  transition-all duration-300 hover:shadow-xl "
-                    >
-                      <button
-                        onClick={toggle}
-                        className="flex w-full items-center justify-between px-6 py-4 text-left font-semibold text-gray-800 transition-all hover:bg-gradient-to-r hover:from-amber-100/80 hover:to-yellow-50/50 focus:outline-none cursor-pointer"
-                      >
-                        <span className="text-lg">
-                          <span className="text-black">{mf.key}</span>
-                        </span>
-                        <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
-                          {isOpen ? (
-                            <ChevronUp className="h-5 w-5 text-[#7d4b0e]" />
-                          ) : (
-                            <ChevronDown className="h-5 w-5 text-[#7d4b0e]" />
-                          )}
-                        </div>
-                      </button>
+                      content = (
+                        <ul className="list-none  space-y-1 text-gray-700">
+                          {values.map((val, i) => (
+                            <li key={i}>{val}</li>
+                          ))}
+                        </ul>
+                      );
+                    } else if (mf.key === "self_life") {
+                      content = (
+                        <span className="text-gray-700">{mf.value}</span>
+                      );
+                    } else if (mf.key === "allergy_advice") {
+                      content = mf.value.split("\n").map((line, i) => (
+                        <p key={i} className="text-gray-700 mb-1">
+                          {line}
+                        </p>
+                      ));
+                    } else {
+                      content = (
+                        <span className="text-gray-700">{mf.value}</span>
+                      );
+                    }
 
+                    return (
                       <div
-                        className={`overflow-hidden transition-all duration-500 ease-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                          }`}
+                        key={`${mf.namespace}.${mf.key}`}
+                        className="overflow-hidden rounded-xl bg-white shadow-md border border-gray-200  transition-all duration-300 hover:shadow-xl "
                       >
-                        <div className="border-t border-gray-100 bg-gradient-to-b from-gray-50 to-white px-6 py-5">
-                          {content}
+                        <button
+                          onClick={toggle}
+                          className="flex w-full items-center justify-between px-6 py-4 text-left font-semibold text-gray-800 transition-all hover:bg-gradient-to-r hover:from-amber-100/80 hover:to-yellow-50/50 focus:outline-none cursor-pointer"
+                        >
+                          <span className="text-lg">
+                            <span className="text-black">{mf.key}</span>
+                          </span>
+                          <div
+                            className={`transition-transform duration-300 ${
+                              isOpen ? "rotate-180" : ""
+                            }`}
+                          >
+                            {isOpen ? (
+                              <ChevronUp className="h-5 w-5 text-[#7d4b0e]" />
+                            ) : (
+                              <ChevronDown className="h-5 w-5 text-[#7d4b0e]" />
+                            )}
+                          </div>
+                        </button>
+
+                        <div
+                          className={`overflow-hidden transition-all duration-500 ease-out ${
+                            isOpen
+                              ? "max-h-96 opacity-100"
+                              : "max-h-0 opacity-0"
+                          }`}
+                        >
+                          <div className="border-t border-gray-100 bg-gradient-to-b from-gray-50 to-white px-6 py-5">
+                            {content}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
-
 
               {/* TRUST BADGES */}
               <div className="flex xl:flex-nowrap flex-wrap  xl:justify-between justify-center gap-10 py-6">
-
                 {/* 1. 100% Pure */}
                 <div className="flex flex-col items-center">
                   <div className="w-20 h-20 rounded-full bg-black border-4 border-yellow-500 flex items-center justify-center">
                     <Leaf className="text-yellow-400 w-10 h-10" />
                   </div>
-                  <p className="mt-2 text-sm font-semibold text-black text-center">100% Pure</p>
+                  <p className="mt-2 text-sm font-semibold text-black text-center">
+                    100% Pure
+                  </p>
                 </div>
 
                 {/* 2. Secure Payment */}
@@ -772,7 +876,9 @@ export default function ProductDetailsClient({ product }) {
                   <div className="w-20 h-20 rounded-full bg-black border-4 border-yellow-500 flex items-center justify-center">
                     <Lock className="text-yellow-400 w-10 h-10" />
                   </div>
-                  <p className="mt-2 text-sm font-semibold text-black text-center">Secure Payment</p>
+                  <p className="mt-2 text-sm font-semibold text-black text-center">
+                    Secure Payment
+                  </p>
                 </div>
 
                 {/* 3. Zero Preservative */}
@@ -780,7 +886,9 @@ export default function ProductDetailsClient({ product }) {
                   <div className="w-20 h-20 rounded-full bg-black border-4 border-yellow-500 flex items-center justify-center">
                     <FlaskConical className="text-yellow-400 w-10 h-10" />
                   </div>
-                  <p className="mt-2 text-sm font-semibold text-black text-center">Zero Preservative</p>
+                  <p className="mt-2 text-sm font-semibold text-black text-center">
+                    Zero Preservative
+                  </p>
                 </div>
 
                 {/* 4. Freshly Made Everyday */}
@@ -798,9 +906,10 @@ export default function ProductDetailsClient({ product }) {
                   <div className="w-20 h-20 rounded-full bg-black border-4 border-yellow-500 flex items-center justify-center">
                     <Truck className="text-yellow-400 w-10 h-10" />
                   </div>
-                  <p className="mt-2 text-sm font-semibold text-black text-center">Fast Shipping</p>
+                  <p className="mt-2 text-sm font-semibold text-black text-center">
+                    Fast Shipping
+                  </p>
                 </div>
-
               </div>
             </div>
           </div>
@@ -822,8 +931,6 @@ export default function ProductDetailsClient({ product }) {
         </div>
       </div>
 
-
-
       {/* EASEBUZZ MONEY BACK PROMISE POPUP */}
       {showEasebuzzModal && (
         <div
@@ -839,8 +946,18 @@ export default function ProductDetailsClient({ product }) {
                 onClick={() => setShowEasebuzzModal(false)}
                 className="absolute top-4 right-4 text-white cursor-pointer"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
               <div className="flex items-center gap-4">
@@ -857,29 +974,50 @@ export default function ProductDetailsClient({ product }) {
             <div className="p-6 space-y-5">
               <div className="bg-amber-50 rounded-xl p-5 text-center border border-amber-200">
                 <p className="text-gray-700">
-                  If your order is <strong>incorrect, damaged, or not delivered</strong>,<br />
+                  If your order is{" "}
+                  <strong>incorrect, damaged, or not delivered</strong>,<br />
                   get <strong>100% refund at zero cost</strong> from Easebuzz.
                 </p>
-                <p className="text-sm text-amber-600 font-medium mt-3">Valid on Prepaid orders only</p>
+                <p className="text-sm text-amber-600 font-medium mt-3">
+                  Valid on Prepaid orders only
+                </p>
               </div>
 
               <div className="space-y-3">
                 <div className="flex gap-3">
                   <div className="w-8 h-8 bg-amber-100 rounded-full flex justify-center items-center">
-                    <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-5 h-5 text-amber-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   <div>
                     <p className="font-bold">100% Refund</p>
-                    <p className="text-sm text-gray-600">on non-delivery or damaged items</p>
+                    <p className="text-sm text-gray-600">
+                      on non-delivery or damaged items
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex gap-3">
                   <div className="w-8 h-8 bg-amber-100 rounded-full flex justify-center items-center">
-                    <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-5 h-5 text-amber-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   <div>
@@ -903,7 +1041,6 @@ export default function ProductDetailsClient({ product }) {
         <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.15)] z-50 border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-
               {/* Left Section - Product Info */}
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                 <img
@@ -921,19 +1058,18 @@ export default function ProductDetailsClient({ product }) {
                 </div>
               </div>
 
-              <div>
-
-              </div>
+              <div></div>
               {/* Right Section - Variant, Quantity & Add to Cart */}
               <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-
                 {/* Variant Selector */}
                 {product.variants?.length > 1 && (
                   <div className="relative">
                     <select
                       value={selectedVariant?.id || ""}
                       onChange={(e) => {
-                        const variant = product.variants.find(v => v.id === e.target.value);
+                        const variant = product.variants.find(
+                          (v) => v.id === e.target.value
+                        );
                         setSelectedVariant(variant);
                         setQuantity(1);
                       }}
@@ -958,7 +1094,12 @@ export default function ProductDetailsClient({ product }) {
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </div>
                   </div>
@@ -967,7 +1108,7 @@ export default function ProductDetailsClient({ product }) {
                 {/* Quantity Selector */}
                 <div className="flex items-center bg-amber-50 border border-gray-300 rounded-full px-1 py-1 shadow-sm">
                   <button
-                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     disabled={quantity <= 1}
                     className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full 
                 bg-[#7d4b0e] hover:bg-yellow-600 disabled:opacity-40 
@@ -981,7 +1122,7 @@ export default function ProductDetailsClient({ product }) {
                   </span>
 
                   <button
-                    onClick={() => setQuantity(q => q + 1)}
+                    onClick={() => setQuantity((q) => q + 1)}
                     className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full 
                 bg-[#7d4b0e] hover:bg-yellow-600 transition 
                 text-lg sm:text-xl text-white font-bold cursor-pointer"
@@ -993,11 +1134,16 @@ export default function ProductDetailsClient({ product }) {
                 {/* Add to Cart Button */}
                 <button
                   onClick={handleAddToCart}
-                  disabled={loading || !selectedVariant || selectedVariant?.availableForSale === false}
-                  className={`font-semibold px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5 rounded-lg transition-all shadow-md whitespace-nowrap text-xs sm:text-sm flex items-center gap-2 ${selectedVariant?.availableForSale === false
-                    ? "bg-[#7d4b0e9c] text-white cursor-not-allowed"
-                    : "bg-[#7d4b0e] text-white hover:bg-yellow-600"
-                    }`}
+                  disabled={
+                    loading ||
+                    !selectedVariant ||
+                    selectedVariant?.availableForSale === false
+                  }
+                  className={`font-semibold px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5 rounded-lg transition-all shadow-md whitespace-nowrap text-xs sm:text-sm flex items-center gap-2 ${
+                    selectedVariant?.availableForSale === false
+                      ? "bg-[#7d4b0e9c] text-white cursor-not-allowed"
+                      : "bg-[#7d4b0e] text-white hover:bg-yellow-600"
+                  }`}
                 >
                   {selectedVariant?.availableForSale === false ? (
                     "Restocking Soon"
@@ -1013,8 +1159,6 @@ export default function ProductDetailsClient({ product }) {
                     </>
                   )}
                 </button>
-
-
               </div>
             </div>
           </div>
@@ -1023,9 +1167,7 @@ export default function ProductDetailsClient({ product }) {
       {showLoginPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-lg p-6 w-[90%] max-w-sm text-center">
-            <h2 className="text-lg font-semibold mb-2">
-              Login Required
-            </h2>
+            <h2 className="text-lg font-semibold mb-2">Login Required</h2>
             <p className="text-sm text-gray-600 mb-5">
               You are not logged in. Please login to add items to your cart.
             </p>
@@ -1054,4 +1196,3 @@ export default function ProductDetailsClient({ product }) {
     </>
   );
 }
-
