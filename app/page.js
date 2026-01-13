@@ -53,10 +53,12 @@ export default async function HomePage() {
       </div>
       <KhakhraMakingProcess/>    
       <CraftsmanshipHeritageSection/>    
-      <ShopByOilPreferenceSection/>    
+      <ShopByOilPreferenceSection/>  
+
+
       <TestimonialsCarousel/>    
       <CallToActionSection/>    
-      <FAQSection/>    
+      {/* <FAQSection/>     */}
     Annapurna Khakhra Landing Page
     </div>
   );
