@@ -1,3 +1,5 @@
+"use client";
+
 export default function WhatsAppCommunitySection() {
     return (
         <section className="w-full bg-[#7d4b0e] text-white py-12 text-center">
