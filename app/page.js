@@ -59,7 +59,7 @@ export default async function HomePage() {
       <TestimonialsCarousel/>    
       <CallToActionSection/>    
       <FAQSection/>    
-    Annapurna Khakhra Landing Page
+    
     </div>
   );
 }
