@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import safeStorage from "@/lib/safeStorage";
 
 // Custom debounce hook
 const useDebounce = (value, delay) => {
@@ -14,7 +15,7 @@ const useDebounce = (value, delay) => {
 };
 
 // Sub-component: AI Avatar
-const AIAvatar = ({ isSpeaking, theme, onStopSpeech }) => {
+const AIAvatar = ({ theme }) => {
   const themeColors = {
     light: {
       glow: "from-amber-500/20 to-yellow-500/20",
@@ -42,66 +43,23 @@ const AIAvatar = ({ isSpeaking, theme, onStopSpeech }) => {
           alt="AI Assistant Avatar - A friendly digital character ready to answer your questions"
           className="w-full h-full object-cover rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl transition-all duration-700 ease-out group-hover:scale-105 group-hover:shadow-3xl border-2 sm:border-4 border-white/30 hover:border-gradient-to-r hover:border-amber-200/50 animate-gentle-bob"
         />
-        {isSpeaking && (
+        <div
+          className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-r ${themeColors[theme].glow} blur opacity-0 group-hover:opacity-100 transition-opacity duration-700`}
+          aria-hidden="true"
+        >
+          <div className="absolute top-4 left-4 w-1 h-1 bg-white rounded-full animate-sparkle"></div>
           <div
-            className="absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden"
-            aria-live="polite"
-            aria-label="AI is speaking"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/30 via-stone-500/30 to-yellow-500/30 animate-gradient-x"></div>
-            <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-t from-amber-500/40 to-transparent animate-wave-slow"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex flex-col items-center space-y-2">
-                <div className="flex space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gradient-to-t from-amber-400 to-yellow-400 rounded-full animate-bounce-smooth"
-                      style={{ animationDelay: `${i * 0.1}s` }}
-                      aria-hidden="true"
-                    />
-                  ))}
-                </div>
-                <div className="text-white text-xs sm:text-sm font-semibold animate-pulse">
-                  Listening & Speaking
-                </div>
-              </div>
-            </div>
-            <div
-              className="absolute bottom-12 sm:bottom-16 left-1/2 transform -translate-x-1/2"
-              aria-hidden="true"
-            >
-              <div className="w-10 h-6 sm:w-12 sm:h-8 bg-white/20 rounded-b-full animate-mouth-open"></div>
-            </div>
-          </div>
-        )}
-        {!isSpeaking && (
-          <div
-            className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-r ${themeColors[theme].glow} blur opacity-0 group-hover:opacity-100 transition-opacity duration-700`}
-            aria-hidden="true"
-          >
-            <div className="absolute top-4 left-4 w-1 h-1 bg-white rounded-full animate-sparkle"></div>
-            <div
-              className="absolute bottom-8 right-8 w-1 h-1 bg-white rounded-full animate-sparkle"
-              style={{ animationDelay: "1.5s" }}
-            ></div>
-          </div>
-        )}
+            className="absolute bottom-8 right-8 w-1 h-1 bg-white rounded-full animate-sparkle"
+            style={{ animationDelay: "1.5s" }}
+          ></div>
+        </div>
       </div>
     </div>
   );
 };
 
 // Sub-component: FAQ Item
-const FAQItem = ({
-  faq,
-  index,
-  openIndex,
-  isSpeaking,
-  theme,
-  onToggle,
-  onKeyDown,
-}) => {
+const FAQItem = ({ faq, index, openIndex, theme, onToggle, onKeyDown }) => {
   const isOpen = openIndex === index;
   const themeClasses = {
     questionBg:
@@ -140,12 +98,7 @@ const FAQItem = ({
         <button
           onClick={() => onToggle(index)}
           onKeyDown={(e) => onKeyDown(e, index)}
-          className={`${
-            themeClasses.questionBg
-          } w-full px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 text-left focus:outline-none focus:ring-2 sm:focus:ring-4 focus:ring-amber-200/50 transition-all duration-400 relative overflow-hidden cursor-pointer ${
-            isSpeaking && isOpen ? "opacity-60 cursor-not-allowed" : ""
-          }`}
-          disabled={isSpeaking && isOpen}
+          className={`${themeClasses.questionBg} w-full px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 text-left focus:outline-none focus:ring-2 sm:focus:ring-4 focus:ring-amber-200/50 transition-all duration-400 relative overflow-hidden cursor-pointer`}
           aria-expanded={isOpen}
           aria-controls={`faq-${index}`}
           id={`faq-question-${index}`}
@@ -215,18 +168,12 @@ const SearchBar = ({ searchQuery, onSearchChange, theme }) => (
   <div className="mb-6 sm:mb-8 relative"></div>
 );
 
-import safeStorage from "@/lib/safeStorage";
-
-// ... (existing debounce hook and other components)
-
 // Main Component
 const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState(null);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [theme, setTheme] = useState("light");
-  const [voices, setVoices] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [speechEnabled, setSpeechEnabled] = useState(false);
+
   useEffect(() => {
     const savedTheme = safeStorage.getItem("faq-theme");
     if (savedTheme) setTheme(savedTheme);
@@ -235,32 +182,6 @@ const FAQSection = () => {
   useEffect(() => {
     safeStorage.setItem("faq-theme", theme);
   }, [theme]);
-
-  useEffect(() => {
-    const supported = isSpeechSupported();
-    setSpeechEnabled(supported);
-
-    if (!supported) return;
-
-    const loadVoices = () => {
-      try {
-        const v = window.speechSynthesis.getVoices();
-        if (Array.isArray(v) && v.length > 0) {
-          setVoices(v);
-        }
-      } catch {
-        setSpeechEnabled(false);
-      }
-    };
-
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-      window.speechSynthesis.cancel();
-    };
-  }, []);
 
   const faqs = useMemo(
     () => [
@@ -324,91 +245,13 @@ const FAQSection = () => {
 
   const toggleFAQ = useCallback(
     (index) => {
-      const newOpenIndex = openIndex === index ? null : index;
-      setOpenIndex(newOpenIndex);
-      // if (window.speechSynthesis.speaking) {
-      //   window.speechSynthesis.cancel();
-      // }
-      // if (newOpenIndex !== null && newOpenIndex < filteredFaqs.length) {
-      //   if ("speechSynthesis" in window) {
-      //     try {
-      //       const utterance = new SpeechSynthesisUtterance(
-      //         filteredFaqs[newOpenIndex].answer
-      //       );
-      //       utterance.lang = "en-US";
-      //       utterance.rate = 0.85;
-      //       utterance.pitch = 1.1;
-      //       utterance.volume = 0.8;
-      //       const femaleVoices = voices.filter(
-      //         (voice) =>
-      //           voice.lang.startsWith("en") &&
-      //           (voice.name.toLowerCase().includes("female") ||
-      //             voice.name.toLowerCase().includes("woman") ||
-      //             voice.name.toLowerCase().includes("samantha") ||
-      //             voice.name.toLowerCase().includes("zira") ||
-      //             voice.name.toLowerCase().includes("susan") ||
-      //             voice.name.toLowerCase().includes("cortana") ||
-      //             (voice.name.toLowerCase().includes("google us english") &&
-      //               voice.name.toLowerCase().includes("female")) ||
-      //             voice.name.toLowerCase().includes("microsoft zira") ||
-      //             voice.name.toLowerCase().includes("apple siri female"))
-      //       );
-      //       const selectedVoice =
-      //         femaleVoices[0] ||
-      //         voices.find((voice) => voice.lang.startsWith("en")) ||
-      //         voices[0];
-      //       if (selectedVoice) {
-      //         utterance.voice = selectedVoice;
-      //       }
-      //       utterance.onstart = () => setIsSpeaking(true);
-      //       utterance.onend = () => setIsSpeaking(false);
-      //       utterance.onerror = (event) => {
-      //         console.error("Speech synthesis error:", event.error);
-      //         setIsSpeaking(false);
-      //       };
-      //       window.speechSynthesis.speak(utterance);
-      //     } catch (error) {
-      //       console.error("Speech synthesis error:", error);
-      //       setIsSpeaking(false);
-      //     }
-      //   }
-      // } else {
-      //   setIsSpeaking(false);
-      // }
-      if (!speechEnabled) return;
-
-      try {
-        window.speechSynthesis.cancel();
-
-        if (newIndex !== null && filteredFaqs[newIndex]) {
-          const utterance = new SpeechSynthesisUtterance(
-            filteredFaqs[newIndex].answer
-          );
-
-          utterance.lang = "en-US";
-          utterance.rate = 0.9;
-
-          if (voices.length > 0) {
-            utterance.voice =
-              voices.find((v) => v.lang.startsWith("en")) || voices[0];
-          }
-
-          utterance.onstart = () => setIsSpeaking(true);
-          utterance.onend = () => setIsSpeaking(false);
-          utterance.onerror = () => setIsSpeaking(false);
-
-          window.speechSynthesis.speak(utterance);
-        }
-      } catch {
-        setIsSpeaking(false);
-      }
+      setOpenIndex(openIndex === index ? null : index);
     },
-    [openIndex, filteredFaqs, voices]
+    [openIndex]
   );
 
   const toggleTheme = useCallback(() => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
+    setTheme(theme === "light" ? "dark" : "light");
   }, [theme]);
 
   const handleKeyDown = useCallback(
@@ -418,74 +261,22 @@ const FAQSection = () => {
         toggleFAQ(index);
       } else if (e.key === "Escape" && openIndex === index) {
         setOpenIndex(null);
-        if (window.speechSynthesis.speaking) {
-          window.speechSynthesis.cancel();
-          setIsSpeaking(false);
-        }
       }
     },
     [toggleFAQ, openIndex]
   );
 
-  useEffect(() => {
-    return () => {
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, []);
-
-  const stopSpeech = useCallback(() => {
-    if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.pause();
-    }
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
-  }, []);
-
   const handleSearchChange = useCallback(
     (query) => {
       setSearchQuery(query);
-      if (openIndex !== null) {
-        setOpenIndex(null);
-        if (window.speechSynthesis.speaking) {
-          stopSpeech();
-        }
-      }
+      if (openIndex !== null) setOpenIndex(null);
     },
-    [openIndex, stopSpeech]
+    [openIndex]
   );
 
   return (
     <div className={`${themeClasses.bgClass}`}>
-      <div
-        className={`max-w-7xl mx-auto py-8 sm:py-12 md:py-16 px-3 sm:px-4 md:px-6 lg:px-8 relative overflow-hidden`}
-      >
-        <div className="absolute inset-0 opacity-20">
-          <div
-            className={`absolute top-10 sm:top-20 left-5 sm:left-10 w-1.5 h-1.5 sm:w-2 sm:h-2 ${
-              theme === "light" ? "bg-[#7C4A0E]" : "bg-[#7C4A0E]"
-            } rounded-full animate-ping`}
-          ></div>
-          <div
-            className={`absolute top-20 sm:top-40 right-10 sm:right-20 w-2 h-2 sm:w-3 sm:h-3 ${
-              theme === "light" ? "bg-[#7C4A0E]" : "bg-[#7C4A0E]"
-            } rounded-full animate-ping`}
-            style={{ animationDelay: "1s" }}
-          ></div>
-          <div
-            className={`absolute bottom-16 sm:bottom-32 left-1/2 w-1 h-1 ${
-              theme === "light" ? "bg-[#7C4A0E]" : "bg-[#7C4A0E]"
-            } rounded-full animate-ping`}
-            style={{ animationDelay: "2s" }}
-          ></div>
-          <div
-            className={`absolute bottom-10 sm:bottom-20 right-5 sm:right-10 w-1.5 h-1.5 sm:w-2 sm:h-2 ${
-              theme === "light" ? "bg-[#7C4A0E]" : "bg-[#7C4A0E]"
-            } rounded-full animate-ping`}
-            style={{ animationDelay: "0.5s" }}
-          ></div>
-        </div>
+      <div className="max-w-7xl mx-auto py-8 sm:py-12 md:py-16 px-3 sm:px-4 md:px-6 lg:px-8 relative overflow-hidden">
         <h1
           className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 md:mb-5 font-heading font-extrabold text-center text-transparent bg-clip-text ${themeClasses.gradientTextClass} animate-fade-in-down px-2`}
           role="banner"
@@ -493,11 +284,7 @@ const FAQSection = () => {
           Frequently Asked Questions
         </h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 items-stretch">
-          <AIAvatar
-            isSpeaking={isSpeaking}
-            theme={theme}
-            onStopSpeech={stopSpeech}
-          />
+          <AIAvatar theme={theme} />
           <div className="space-y-4 sm:space-y-6 h-auto" role="main">
             <SearchBar
               searchQuery={searchQuery}
@@ -514,7 +301,6 @@ const FAQSection = () => {
                     faq={faq}
                     index={index}
                     openIndex={openIndex}
-                    isSpeaking={isSpeaking}
                     theme={theme}
                     onToggle={toggleFAQ}
                     onKeyDown={handleKeyDown}
@@ -524,148 +310,6 @@ const FAQSection = () => {
             )}
           </div>
         </div>
-        <style jsx global>{`
-          @keyframes gentle-bob {
-            0%,
-            100% {
-              transform: translateY(0);
-            }
-            50% {
-              transform: translateY(-5px);
-            }
-          }
-          @keyframes stagger-slide-in {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          @keyframes fade-in-down {
-            from {
-              opacity: 0;
-              transform: translateY(-20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          @keyframes fade-in-up {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          @keyframes expand-text {
-            from {
-              opacity: 0;
-              max-height: 0;
-            }
-            to {
-              opacity: 1;
-              max-height: 200px;
-            }
-          }
-          @keyframes animate-gradient-x {
-            0%,
-            100% {
-              transform: translateX(-100%);
-            }
-            50% {
-              transform: translateX(100%);
-            }
-          }
-          @keyframes animate-wave-slow {
-            0%,
-            100% {
-              transform: translateY(0);
-            }
-            50% {
-              transform: translateY(-5px);
-            }
-          }
-          @keyframes animate-bounce-smooth {
-            0%,
-            100% {
-              transform: translateY(0);
-            }
-            50% {
-              transform: translateY(-8px);
-            }
-          }
-          @keyframes animate-mouth-open {
-            0%,
-            100% {
-              height: 4px;
-              border-radius: 50%;
-            }
-            50% {
-              height: 12px;
-              border-radius: 30%;
-            }
-          }
-          @keyframes animate-sparkle {
-            0%,
-            100% {
-              opacity: 0;
-              transform: scale(0);
-            }
-            50% {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-          @keyframes animate-slide-in-up {
-            from {
-              opacity: 0;
-              transform: translateY(10px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          .animate-gentle-bob {
-            animation: gentle-bob 3s ease-in-out infinite;
-          }
-          .animate-stagger-slide-in {
-            animation: stagger-slide-in 0.6s ease-out forwards;
-          }
-          .animate-fade-in-down {
-            animation: fade-in-down 0.8s ease-out forwards;
-          }
-          .animate-fade-in-up {
-            animation: fade-in-up 0.8s ease-out forwards;
-          }
-          .animate-expand-text {
-            animation: expand-text 0.7s ease-out forwards;
-          }
-          .animate-delay-100 {
-            animation-delay: 0.1s;
-          }
-          .animate-delay-300 {
-            animation-delay: 0.3s;
-          }
-          .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-          }
-        `}</style>
       </div>
     </div>
   );
