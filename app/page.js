@@ -15,7 +15,7 @@ export default async function HomePage() {
 
   return (
     <div className="bg-[#fdfbf7]">
-      <HeroSection />
+      {/* <HeroSection />
       <OurPromiseSection />
       <div className="max-w-7xl mx-auto bg-[#fdfbf7] py-2">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-extrabold text-[#7C4A0E] text-center m-2">
@@ -24,18 +24,19 @@ export default async function HomePage() {
         <p className="mt-4 text-[#cc760e] text-base sm:text-lg md:text-xl leading-relaxed text-center m-2">
           Freshly crafted, lovingly made. Explore our bestsellers.
         </p>
-        {/* <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
-        </div> */}
+        </div>
       </div>
       <KhakhraMakingProcess/>    
       <CraftsmanshipHeritageSection/>    
       <ShopByOilPreferenceSection/>    
       <TestimonialsCarousel/>    
       <CallToActionSection/>    
-      <FAQSection/>    
+      <FAQSection/>     */}
+    Annapurna Khakhra Landing Page
     </div>
   );
 }
