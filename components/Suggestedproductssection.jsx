@@ -125,7 +125,6 @@ export default function YouMayAlsoLike({ currentCartItems = [] }) {
           quantity: 1,
           customerShopifyId: customerShopifyId || null,
           cartId:
-          cartId:
             safeStorage.getItem("cartId") ||
             safeStorage.getItem("guestCartId") ||
             null,
