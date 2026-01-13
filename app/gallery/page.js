@@ -17,8 +17,8 @@ export default function KhakhraGallery() {
     // { id: "Jeera-khakhra-made-with-pure-ghee", src: "/Chana Khakhra 3 - Copy.png", alt: "Jeera Khakhra", title: "Jeera Khakhra", description: "Light, flavorful khakhra infused with premium roasted cumin." },
     { id: "Methi-khakhra-made-with-pure-ghee", src: "/Chat Khakhra 3.webp", alt: "Methi Khakhra", title: "Methi Khakhra", description: "Traditional Gujarati methi khakhra made with authentic spices." },
     // { id: "Bajri-khakhra-made-with-pure-ghee", src: "/Makar Sankranti Elderly Couple Eating Khakhra - Copy.png", alt: "Mag khakhra", title: "Mag khakhra", description: "Healthy Mag khakhra packed with nutrition and taste." },
-    { id: "211", src: "/Navratri Friends Group Enjoying Khakhra.webp", alt: "Panipuri Khakhra", title: "Panipuri Khakhra", description: "Tangy panipuri-flavored crispy khakhra snack." },
-    { id: "208", src: "/Diwali Family Eating Khakhra.webp", alt: "Manchurian Khakhra", title: "Manchurian Khakhra", description: "Mumbai-style Manchurian taste packed in thin khakhra." },
+    { id: "panipuri-khakhra", src: "/Navratri Friends Group Enjoying Khakhra.webp", alt: "Panipuri Khakhra", title: "Panipuri Khakhra", description: "Tangy panipuri-flavored crispy khakhra snack." },
+    { id: "crunchy-manchurian-khakhra", src: "/Diwali Family Eating Khakhra.webp", alt: "Manchurian Khakhra", title: "Manchurian Khakhra", description: "Mumbai-style Manchurian taste packed in thin khakhra." },
   ];
 
   return (
